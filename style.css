@@ -1,0 +1,15 @@
+body{
+margin:0;
+overflow:hidden;
+font-family:Arial;
+}
+
+#ui{
+position:fixed;
+top:20px;
+left:20px;
+background:white;
+padding:15px;
+border-radius:10px;
+box-shadow:0 0 10px rgba(0,0,0,0.3);
+}

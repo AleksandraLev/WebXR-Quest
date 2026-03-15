@@ -18,8 +18,8 @@ const uiLevel=document.getElementById("level");
 const uiTask=document.getElementById("task");
 const uiScore=document.getElementById("score");
 
-const soundCollect=new Audio("sounds/collect.mp3");
-const soundWin=new Audio("sounds/win.mp3");
+const soundCollect=new Audio("assets/sounds/collect.mp3");
+const soundVictory=new Audio("assets/sounds/victory.mp3");
 
 init();
 animate();
@@ -148,7 +148,7 @@ level++;
 
 uiLevel.textContent=level;
 
-soundWin.play();
+soundVictory.play();
 
 startLevel();
 
@@ -157,7 +157,7 @@ startLevel();
 function winGame(){
 
 uiTask.textContent="Вы прошли квест!";
-soundWin.play();
+soundVictory.play();
 
 }
 

@@ -58,22 +58,18 @@ function init(){
     window.addEventListener("click",raycastClick);
 }
 
-const emptyObject = new THREE.Object3D();
-scene.add(emptyObject);
-    
 function spawnObject(color){
     const geometry=new THREE.BoxGeometry(0.1,0.1,0.1);
     const material=new THREE.MeshStandardMaterial({color:color});
 
     const mesh=new THREE.Mesh(geometry,material);
 
-    // mesh.position.setFromMatrixPosition(reticle.matrix);
-    emptyObject.position.setFromMatrixPosition(reticle.matrix);
-    mesh.position.setFromMatrixPosition(emptyObject.matrix);
-    emptyObject.add(mesh);
-    mesh.userData.collectible = true;
-    //scene.add(mesh);
-    return mesh
+    mesh.position.setFromMatrixPosition(reticle.matrix);
+    mesh.position.x += (Math.random() - 0.5) * 0.5;
+    mesh.position.z += (Math.random() - 0.5) * 0.5;
+    mesh.userData.collectible=true;
+
+    scene.add(mesh);
 }
 
 function startLevel(){
@@ -81,34 +77,22 @@ function startLevel(){
 
     if(level===1){
         uiTask.textContent="Найдите красный куб";
-        obj1 = spawnObject("red");
-        obj1.position.set(2, 0, 0);
-        scene.add(obj1);
+        spawnObject("red");
     }
 
     if(level===2){
         uiTask.textContent="Соберите 2 синих объекта";
 
-        obj1 = spawnObject("blue");
-        obj1.position.set(2, 0, 0);
-        scene.add(obj1);
-        obj2 = spawnObject("blue");
-        obj2.position.set(-2, 0, 0);
-        scene.add(obj1);
+        spawnObject("blue");
+        spawnObject("blue");
     }
 
     if(level===3){
         uiTask.textContent="Соберите 3 зелёных объекта";
 
-        obj1 = spawnObject("green");
-        obj1.position.set(3, 0, 0);
-        scene.add(obj1);
-        obj2 = spawnObject("green");
-        obj2.position.set(0, 0, 0);
-        scene.add(obj2);
-        obj3 = spawnObject("green");
-        obj3.position.set(-3, 0, 0);
-        scene.add(obj3);
+        spawnObject("green");
+        spawnObject("green");
+        spawnObject("green");
     }
 }
 
@@ -162,7 +146,6 @@ function nextLevel(){
 function winGame(){
     uiTask.textContent="Вы прошли квест!";
     soundVictory.play();
-    level = 4;
 }
 
 function onSelect(){

@@ -146,6 +146,7 @@ function nextLevel(){
 function winGame(){
     uiTask.textContent="Вы прошли квест!";
     soundVictory.play();
+    level = 99;
 }
 
 function onSelect(){

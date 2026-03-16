@@ -58,14 +58,19 @@ function init(){
     window.addEventListener("click",raycastClick);
 }
 
+const emptyObject = new THREE.Object3D();
+scene.add(emptyObject);
+    
 function spawnObject(color){
     const geometry=new THREE.BoxGeometry(0.1,0.1,0.1);
     const material=new THREE.MeshStandardMaterial({color:color});
 
     const mesh=new THREE.Mesh(geometry,material);
 
-    mesh.position.setFromMatrixPosition(reticle.matrix);
-    reticle.add(mesh);
+    // mesh.position.setFromMatrixPosition(reticle.matrix);
+    emptyObject.position.setFromMatrixPosition(reticle.matrix);
+    mesh.position.setFromMatrixPosition(emptyObject.matrix);
+    emptyObject.add(mesh);
     mesh.userData.collectible = true;
     //scene.add(mesh);
     return mesh

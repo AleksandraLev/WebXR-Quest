@@ -67,7 +67,7 @@ function spawnObject(color){
     mesh.position.setFromMatrixPosition(reticle.matrix);
     reticle.add(mesh);
     mesh.userData.collectible = true;
-    scene.add(mesh);
+    //scene.add(mesh);
     return mesh
 }
 
@@ -78,6 +78,7 @@ function startLevel(){
         uiTask.textContent="Найдите красный куб";
         obj1 = spawnObject("red");
         obj1.position.set(2, 0, 0);
+        scene.add(obj1);
     }
 
     if(level===2){
@@ -85,8 +86,10 @@ function startLevel(){
 
         obj1 = spawnObject("blue");
         obj1.position.set(2, 0, 0);
+        scene.add(obj1);
         obj2 = spawnObject("blue");
         obj2.position.set(-2, 0, 0);
+        scene.add(obj1);
     }
 
     if(level===3){
@@ -94,10 +97,13 @@ function startLevel(){
 
         obj1 = spawnObject("green");
         obj1.position.set(3, 0, 0);
+        scene.add(obj1);
         obj2 = spawnObject("green");
         obj2.position.set(0, 0, 0);
+        scene.add(obj2);
         obj3 = spawnObject("green");
         obj3.position.set(-3, 0, 0);
+        scene.add(obj3);
     }
 }
 
@@ -151,6 +157,7 @@ function nextLevel(){
 function winGame(){
     uiTask.textContent="Вы прошли квест!";
     soundVictory.play();
+    level = 4;
 }
 
 function onSelect(){

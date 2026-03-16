@@ -26,209 +26,182 @@ animate();
 
 function init(){
 
-scene=new THREE.Scene();
+    scene=new THREE.Scene();
 
-camera=new THREE.PerspectiveCamera(70,window.innerWidth/window.innerHeight,0.01,20);
+    camera=new THREE.PerspectiveCamera(70,window.innerWidth/window.innerHeight,0.01,20);
 
-renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
-renderer.setSize(window.innerWidth,window.innerHeight);
-renderer.xr.enabled=true;
+    renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+    renderer.setSize(window.innerWidth,window.innerHeight);
+    renderer.xr.enabled=true;
 
-document.body.appendChild(renderer.domElement);
+    document.body.appendChild(renderer.domElement);
 
-document.body.appendChild(ARButton.createButton(renderer,{requiredFeatures:["hit-test"]}));
+    document.body.appendChild(ARButton.createButton(renderer,{requiredFeatures:["hit-test"]}));
 
-const light=new THREE.HemisphereLight(0xffffff,0xbbbbff,1);
-scene.add(light);
+    const light=new THREE.HemisphereLight(0xffffff,0xbbbbff,1);
+    scene.add(light);
 
-const geometry=new THREE.RingGeometry(0.1,0.15,32).rotateX(-Math.PI/2);
-const material=new THREE.MeshBasicMaterial({color:0x00ffff});
+    const geometry=new THREE.RingGeometry(0.1,0.15,32).rotateX(-Math.PI/2);
+    const material=new THREE.MeshBasicMaterial({color:0x00ffff});
 
-reticle=new THREE.Mesh(geometry,material);
-reticle.matrixAutoUpdate=false;
-reticle.visible=false;
+    reticle=new THREE.Mesh(geometry,material);
+    reticle.matrixAutoUpdate=false;
+    reticle.visible=false;
 
-scene.add(reticle);
+    scene.add(reticle);
 
-controller=renderer.xr.getController(0);
-controller.addEventListener("select",onSelect);
+    controller=renderer.xr.getController(0);
+    controller.addEventListener("select",onSelect);
 
-scene.add(controller);
+    scene.add(controller);
 
-window.addEventListener("click",raycastClick);
+    window.addEventListener("click",raycastClick);
 }
 
 function spawnObject(color){
+    const geometry=new THREE.BoxGeometry(0.1,0.1,0.1);
+    const material=new THREE.MeshStandardMaterial({color:color});
 
-const geometry=new THREE.BoxGeometry(0.1,0.1,0.1);
-const material=new THREE.MeshStandardMaterial({color:color});
+    const mesh=new THREE.Mesh(geometry,material);
 
-const mesh=new THREE.Mesh(geometry,material);
-
-mesh.position.setFromMatrixPosition(reticle.matrix);
-mesh.userData.collectible=true;
-
-scene.add(mesh);
-
+    mesh.position.setFromMatrixPosition(reticle.matrix);
+    reticle.add(mesh);
+    mesh.userData.collectible = true;
+    scene.add(mesh);
+    return mesh
 }
 
 function startLevel(){
+    collected=0;
 
-collected=0;
+    if(level===1){
+        uiTask.textContent="Найдите красный куб";
+        obj1 = spawnObject("red");
+        obj1.position.set(2, 0, 0);
+    }
 
-if(level===1){
-uiTask.textContent="Найдите красный куб";
-spawnObject("red");
-}
+    if(level===2){
+        uiTask.textContent="Соберите 2 синих объекта";
 
-if(level===2){
+        obj1 = spawnObject("blue");
+        obj1.position.set(2, 0, 0);
+        obj2 = spawnObject("blue");
+        obj2.position.set(-2, 0, 0);
+    }
 
-uiTask.textContent="Соберите 2 синих объекта";
+    if(level===3){
+        uiTask.textContent="Соберите 3 зелёных объекта";
 
-spawnObject("blue");
-spawnObject("blue");
-
-}
-
-if(level===3){
-
-uiTask.textContent="Соберите 3 зелёных объекта";
-
-spawnObject("green");
-spawnObject("green");
-spawnObject("green");
-
-}
-
+        obj1 = spawnObject("green");
+        obj1.position.set(3, 0, 0);
+        obj2 = spawnObject("green");
+        obj2.position.set(0, 0, 0);
+        obj3 = spawnObject("green");
+        obj3.position.set(-3, 0, 0);
+    }
 }
 
 function raycastClick(event){
+    const mouse=new THREE.Vector2(
+    (event.clientX/window.innerWidth)*2-1,
+    -(event.clientY/window.innerHeight)*2+1
+    );
 
-const mouse=new THREE.Vector2(
-(event.clientX/window.innerWidth)*2-1,
--(event.clientY/window.innerHeight)*2+1
-);
+    const raycaster=new THREE.Raycaster();
+    raycaster.setFromCamera(mouse,camera);
 
-const raycaster=new THREE.Raycaster();
-raycaster.setFromCamera(mouse,camera);
+    const intersects=raycaster.intersectObjects(scene.children);
 
-const intersects=raycaster.intersectObjects(scene.children);
+    intersects.forEach(obj=>{
 
-intersects.forEach(obj=>{
+        if(obj.object.userData.collectible){
 
-if(obj.object.userData.collectible){
+            scene.remove(obj.object);
 
-scene.remove(obj.object);
+            collected++;
 
-collected++;
+            soundCollect.play();
 
-soundCollect.play();
+            checkProgress();
 
-checkProgress();
+        }
 
-}
-
-});
-
+    });
 }
 
 function checkProgress(){
 
-if(level===1 && collected===1) nextLevel();
-if(level===2 && collected===2) nextLevel();
-if(level===3 && collected===3) winGame();
+    if(level===1 && collected===1) nextLevel();
+    if(level===2 && collected===2) nextLevel();
+    if(level===3 && collected===3) winGame();
 
-uiScore.textContent="Собрано: "+collected;
-
+    uiScore.textContent="Собрано: "+collected;
 }
 
 function nextLevel(){
+    level++;
 
-level++;
+    uiLevel.textContent=level;
 
-uiLevel.textContent=level;
+    soundVictory.play();
 
-soundVictory.play();
-
-startLevel();
-
+    startLevel();
 }
 
 function winGame(){
-
-uiTask.textContent="Вы прошли квест!";
-soundVictory.play();
-
+    uiTask.textContent="Вы прошли квест!";
+    soundVictory.play();
 }
 
 function onSelect(){
+    if(!reticle.visible) return;
 
-if(!reticle.visible) return;
-
-if(scene.children.filter(o=>o.userData.collectible).length===0){
-
-startLevel();
-
-}
-
+    if(scene.children.filter(o=>o.userData.collectible).length===0){
+        startLevel();
+    }
 }
 
 function animate(){
-renderer.setAnimationLoop(render);
+    renderer.setAnimationLoop(render);
 }
 
 function render(timestamp,frame){
 
-if(frame){
+    if(frame){
+        const referenceSpace=renderer.xr.getReferenceSpace();
+        const session=renderer.xr.getSession();
 
-const referenceSpace=renderer.xr.getReferenceSpace();
-const session=renderer.xr.getSession();
+        if(hitTestSourceRequested===false){
+            session.requestReferenceSpace("viewer").then(function(referenceSpace){
 
-if(hitTestSourceRequested===false){
+            session.requestHitTestSource({space:referenceSpace}).then(function(source){
+                    hitTestSource=source;});
 
-session.requestReferenceSpace("viewer").then(function(referenceSpace){
+            });
 
-session.requestHitTestSource({space:referenceSpace}).then(function(source){
+            session.addEventListener("end",function(){
+                hitTestSourceRequested=false;
+                hitTestSource=null;});
+            hitTestSourceRequested=true;
+        }
 
-hitTestSource=source;
+        if(hitTestSource){
+            const hitTestResults=frame.getHitTestResults(hitTestSource);
 
-});
+            if(hitTestResults.length){
 
-});
+                const hit=hitTestResults[0];
 
-session.addEventListener("end",function(){
+                reticle.visible=true;
 
-hitTestSourceRequested=false;
-hitTestSource=null;
+                reticle.matrix.fromArray(hit.getPose(referenceSpace).transform.matrix);
 
-});
-
-hitTestSourceRequested=true;
-
-}
-
-if(hitTestSource){
-
-const hitTestResults=frame.getHitTestResults(hitTestSource);
-
-if(hitTestResults.length){
-
-const hit=hitTestResults[0];
-
-reticle.visible=true;
-
-reticle.matrix.fromArray(hit.getPose(referenceSpace).transform.matrix);
-
-}else{
-
-reticle.visible=false;
-
-}
-
-}
-
-}
-
-renderer.render(scene,camera);
-
+            }
+            
+            else {
+                reticle.visible=false;
+            }
+        }
+    }
+    renderer.render(scene,camera);
 }

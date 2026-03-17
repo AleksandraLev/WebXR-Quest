@@ -110,33 +110,64 @@ function spawnObject(modelPath){
 
 function spawnLevel1(){
 
-  loader.load("assets/models/key.glb", function(gltf){
+//   loader.load("assets/models/key.glb", function(gltf){
 
-    key = gltf.scene;
-    key.scale.set(1,1,1);
+//     key = gltf.scene;
+//     key.scale.set(1,1,1);
+//     key.position.setFromMatrixPosition(reticle.matrix);
+
+//     key.position.x += getRandomFar(-2.5, -1.5, 1.5, 2.5);
+//     key.position.z += getRandomFar(-2.5, -1.5, 1.5, 2.5);
+//     key.position.y += 0.05;
+//     key.userData.type = "key";
+
+//     scene.add(key);
+
+//   });
+
+//   loader.load("assets/models/sourse/chest.glb", function(gltf){
+
+//     chest = gltf.scene;
+//     chest.scale.set(1,1,1);
+
+//     chest.position.setFromMatrixPosition(reticle.matrix);
+//     chest.position.y += 0.05;
+//     // chest.position.x += 1; // чуть в сторону
+
+//     chest.userData.type = "chest";
+
+//     scene.add(chest);
+
+    //   });
+    const geometry=new THREE.BoxGeometry(0.1,0.02,0.02);
+    const material=new THREE.MeshStandardMaterial({color:"yellow"});
+
+    const key = new THREE.Mesh(geometry, material);
     key.position.setFromMatrixPosition(reticle.matrix);
-
     key.position.x += getRandomFar(-2.5, -1.5, 1.5, 2.5);
     key.position.z += getRandomFar(-2.5, -1.5, 1.5, 2.5);
-    key.position.y += 0.05;  
     key.userData.type = "key";
-
     scene.add(key);
+    
+    const geometry2=new THREE.BoxGeometry(0.1,0.1,0.2);
+    const material2=new THREE.MeshStandardMaterial({color:(140, 77, 10)});
 
-  });
-
-  loader.load("assets/models/sourse/chest.glb", function(gltf){
-
-    chest = gltf.scene;
-    chest.scale.set(1,1,1);
-
+    const chest = new THREE.Mesh(geometry2, material2);
     chest.position.setFromMatrixPosition(reticle.matrix);
-    chest.position.y += 0.05;  
-    // chest.position.x += 1; // чуть в сторону
-
     chest.userData.type = "chest";
-
     scene.add(chest);
+    loader.load("assets/models/sourse/chest.glb", function(gltf){
+
+        chest = gltf.scene;
+        chest.scale.set(1,1,1);
+
+        chest.position.setFromMatrixPosition(reticle.matrix);
+        chest.position.y += 0.05;  
+        // chest.position.x += 1; // чуть в сторону
+
+        chest.userData.type = "chest";
+
+        scene.add(chest);
 
   });
 

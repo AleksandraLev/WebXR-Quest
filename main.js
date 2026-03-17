@@ -17,7 +17,8 @@ let chest = null;
 let grabbedObject = null;
 
 let level=1;
-let collected=0;
+let collected = 0;
+let level1started = false;
 
 const uiLevel=document.getElementById("level");
 const uiTask=document.getElementById("task");
@@ -139,15 +140,16 @@ function spawnLevel1() {
     //     scene.add(chest);
 
     //   });
-    if (key != null || chest != null)
+    if (level1started)
         return;
-    const geometry=new THREE.BoxGeometry(0.1,0.02,0.02);
+    const geometry=new THREE.BoxGeometry(0.3,0.1,0.1);
     const material=new THREE.MeshStandardMaterial({color:"yellow"});
 
     key = new THREE.Mesh(geometry, material);
     key.position.setFromMatrixPosition(reticle.matrix);
     key.position.x += getRandomFar(-2.5, -1.5, 1.5, 2.5);
     key.position.z += getRandomFar(-2.5, -1.5, 1.5, 2.5);
+    key.position.y += 0.05;
     key.userData.type = "key";
     scene.add(key);
     
@@ -156,8 +158,10 @@ function spawnLevel1() {
 
     chest = new THREE.Mesh(geometry2, material2);
     chest.position.setFromMatrixPosition(reticle.matrix);
+    chest.position.y += 0.05;
     chest.userData.type = "chest";
     scene.add(chest);
+    level1started = true;
 }
 
 

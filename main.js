@@ -9,7 +9,11 @@ let controller;
 
 let reticle;
 let hitTestSource=null;
-let hitTestSourceRequested=false;
+let hitTestSourceRequested = false;
+
+let key = null;
+let chest = null;
+let grabbedObject = null;
 
 let level=1;
 let collected=0;
@@ -65,7 +69,7 @@ function init(){
     window.addEventListener("click",raycastClick);
 }
 
-function spawnObject(color){
+function spawnObject1(color){
     const geometry=new THREE.BoxGeometry(0.1,0.1,0.1);
     const material=new THREE.MeshStandardMaterial({color:color});
 
@@ -79,62 +83,173 @@ function spawnObject(color){
     scene.add(mesh);
 }
 
+const loader = new GLTFLoader();
+
+function spawnObject(modelPath){
+
+  loader.load(modelPath, function(gltf){
+
+    const model = gltf.scene;
+
+    model.position.setFromMatrixPosition(reticle.matrix);
+
+    // случайное смещение
+    model.position.x += (Math.random() - 0.5) * 0.5;
+    model.position.z += (Math.random() - 0.5) * 0.5;
+
+    model.scale.set(0.2, 0.2, 0.2);
+
+    model.userData.collectible = true;
+
+    scene.add(model);
+
+  });
+
+}
+
+function spawnLevel1(){
+
+  loader.load("assets/models/key.glb", function(gltf){
+
+    key = gltf.scene;
+    key.scale.set(0.2,0.2,0.2);
+    key.position.setFromMatrixPosition(reticle.matrix);
+
+    key.position.x += getRandomFar(-2.5, -1.5, 1.5, 2.5);
+    key.position.z += getRandomFar(-2.5, -1.5, 1.5, 2.5);
+    key.userData.type = "key";
+
+    scene.add(key);
+
+  });
+
+  loader.load("assets/models/sourse/chest.glb", function(gltf){
+
+    chest = gltf.scene;
+    chest.scale.set(0.3,0.3,0.3);
+
+    chest.position.setFromMatrixPosition(reticle.matrix);
+    // chest.position.x += 1; // чуть в сторону
+
+    chest.userData.type = "chest";
+
+    scene.add(chest);
+
+  });
+
+}
+
+
+function getRandomFar(min1, max1, min2, max2) {
+  if (Math.random() < 0.5) {
+    return Math.random() * (max1 - min1) + min1;
+  } else {
+    return Math.random() * (max2 - min2) + min2;
+  }
+}
+
+function spawnCoin() {
+    if(!reticle.visible) return;
+
+    loader.load("assets/models/coin.glb", function(gltf){
+
+        const coin = gltf.scene;
+
+        coin.scale.set(0.1, 0.1, 0.1);
+
+        // позиция от reticle (как база)
+        coin.position.setFromMatrixPosition(reticle.matrix);
+
+        // рандомный разброс (далеко от центра)
+        coin.position.x += getRandomFar(-2, -1, 1, 2);
+        coin.position.z += getRandomFar(-2, -1, 1, 2);
+
+        // помечаем как собираемый объект
+        coin.userData.type = "collectible";
+
+        // важно для raycast
+        coin.traverse(child => {
+        if(child.isMesh){
+            child.userData.type = "collectible";
+        }
+        });
+
+        scene.add(coin);
+
+    });
+
+}
+
 function startLevel(){
     collected=0;
 
-    if(level===1){
-        uiTask.textContent="Найдите красный куб";
-        spawnObject("red");
+    if (level === 1) {
+        uiTask.textContent = "Найдите ключик и откройте сундук.";
+        spawnLevel1()
     }
 
     if(level===2){
-        uiTask.textContent="Соберите 2 синих объекта";
+        uiTask.textContent = "Соберите 10 монет";
 
-        spawnObject("blue");
-        spawnObject("blue");
+        collected = 0;
+
+        for(let i = 0; i < 10; i++){
+            spawnCoin();
+        }
     }
 
     if(level===3){
         uiTask.textContent="Соберите 3 зелёных объекта";
 
-        spawnObject("green");
-        spawnObject("green");
-        spawnObject("green");
+        spawnObject1("green");
+        spawnObject1("green");
+        spawnObject1("green");
     }
 }
 
-function raycastClick(event){
-    const mouse=new THREE.Vector2(
-    (event.clientX/window.innerWidth)*2-1,
-    -(event.clientY/window.innerHeight)*2+1
+
+function raycastClick(event) {
+    if(grabbedObject) return;
+
+    const mouse = new THREE.Vector2(
+        (event.clientX / window.innerWidth) * 2 - 1,
+        -(event.clientY / window.innerHeight) * 2 + 1
     );
 
-    const raycaster=new THREE.Raycaster();
-    raycaster.setFromCamera(mouse,camera);
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(mouse, camera);
 
-    const intersects=raycaster.intersectObjects(scene.children);
+    const intersects = raycaster.intersectObjects(scene.children, true);
 
-    intersects.forEach(obj=>{
+    if(intersects.length){
 
-        if(obj.object.userData.collectible){
+        let obj = intersects[0].object;
 
-            scene.remove(obj.object);
-
-            collected++;
-
-            soundCollect.play();
-
-            checkProgress();
-
+        // поднимаемся вверх до объекта с userData
+        while(obj.parent && !obj.userData.type){
+        obj = obj.parent;
         }
 
-    });
+        // 🔑 КЛЮЧ — взять
+        if(obj.userData.type === "key"){
+        grabbedObject = obj;
+        return;
+        }
+
+        // 📦 ОБЫЧНЫЙ ПРЕДМЕТ — собрать
+        if(obj.userData.type === "collectible"){
+
+        scene.remove(obj);
+
+        collected++;
+        soundCollect.play();
+
+        checkProgress();
+        }
+    }
 }
-
 function checkProgress(){
-
-    if(level===1 && collected===1) nextLevel();
-    if(level===2 && collected===2) nextLevel();
+    if(level === 2 && collected === 10) nextLevel();
     if(level===3 && collected===3) winGame();
 
     uiScore.textContent="Собрано: "+collected;
@@ -159,6 +274,22 @@ function winGame(){
 function onSelect(){
     if(!reticle.visible) return;
 
+    if (grabbedObject && chest) {
+        const distance = grabbedObject.position.distanceTo(chest.position);
+        if (distance < 0.5) {
+            // Убираем ключ и сундук
+            scene.remove(grabbedObject);
+            scene.remove(chest);
+
+            grabbedObject = null;
+            key = null;
+            chest = null;
+
+            nextLevel(); // Переход на уровень 2
+            return; // важно, чтобы не запускался следующий блок
+        }
+    }
+    
     if(scene.children.filter(o=>o.userData.collectible).length===0){
         startLevel();
     }
@@ -205,6 +336,17 @@ function render(timestamp,frame){
                 reticle.visible=false;
             }
         }
+    }
+    if(grabbedObject){
+
+        const direction = new THREE.Vector3(0, 0, -1)
+            .applyQuaternion(camera.quaternion);
+
+        const position = camera.position
+            .clone()
+            .add(direction.multiplyScalar(1));
+
+        grabbedObject.position.copy(position);
     }
     renderer.render(scene,camera);
 }

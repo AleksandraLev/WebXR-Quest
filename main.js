@@ -17,7 +17,7 @@ let chest = null;
 
 let level=1;
 let collected = 0;
-let level1started = false;
+let levelstarted = false;
 
 const uiLevel=document.getElementById("level");
 const uiTask=document.getElementById("task");
@@ -109,39 +109,9 @@ function spawnObject(modelPath){
 }
 
 function spawnLevel1() {
-
-    //   loader.load("assets/models/key.glb", function(gltf){
-
-    //     key = gltf.scene;
-    //     key.scale.set(1,1,1);
-    //     key.position.setFromMatrixPosition(reticle.matrix);
-
-    //     key.position.x += getRandomFar(-2.5, -1.5, 1.5, 2.5);
-    //     key.position.z += getRandomFar(-2.5, -1.5, 1.5, 2.5);
-    //     key.position.y += 0.05;
-    //     key.userData.type = "key";
-
-    //     scene.add(key);
-
-    //   });
-
-    //   loader.load("assets/models/sourse/chest.glb", function(gltf){
-
-    //     chest = gltf.scene;
-    //     chest.scale.set(1,1,1);
-
-    //     chest.position.setFromMatrixPosition(reticle.matrix);
-    //     chest.position.y += 0.05;
-    //     // chest.position.x += 1; // чуть в сторону
-
-    //     chest.userData.type = "chest";
-
-    //     scene.add(chest);
-
-    //   });
     if (key != null || chest != null) return;
 
-    if (level1started)
+    if (levelstarted)
         return;
     const geometry=new THREE.BoxGeometry(0.3,0.1,0.1);
     const material=new THREE.MeshStandardMaterial({color:"yellow"});
@@ -162,7 +132,7 @@ function spawnLevel1() {
     chest.position.y += 0.05;
     chest.userData.type = "chest";
     scene.add(chest);
-    level1started = true;
+    levelstarted = true;
 }
 
 
@@ -190,9 +160,6 @@ function spawnCoin() {
     coin.position.x += getRandomFar(-2, -1, 1, 2);
     coin.position.z += getRandomFar(-2, -1, 1, 2);
 
-    // если вдруг лежит "не так", можно раскомментировать:
-    // coin.rotation.x = Math.PI / 2;
-
     coin.userData.type = "collectible";
 
     scene.add(coin);
@@ -206,7 +173,9 @@ function startLevel(){
         spawnLevel1()
     }
 
-    if(level===2){
+    if (level === 2) {
+        if (levelstarted)
+            return;
         uiTask.textContent = "Соберите 10 монет";
 
         collected = 0;
@@ -214,14 +183,19 @@ function startLevel(){
         for(let i = 0; i < 10; i++){
             spawnCoin();
         }
+        levelstarted = true;
     }
 
-    if(level===3){
+    if (level === 3) {
+        if (levelstarted)
+            return;
+
         uiTask.textContent="Соберите 3 зелёных объекта";
 
         spawnObject1("green");
         spawnObject1("green");
         spawnObject1("green");
+        levelstarted = true;
     }
 }
 
@@ -260,7 +234,6 @@ function raycastClick(event) {
         if(obj.userData.type === "chest" && key === null) {
             scene.remove(obj);
             chest = null;
-            soundVictory.play();
             nextLevel(); // Переход на уровень 2
             return;
         }
@@ -299,6 +272,7 @@ function checkProgress(){
 
 function nextLevel(){
     level++;
+    levelstarted = false;
 
     uiLevel.textContent=level;
 
@@ -315,22 +289,6 @@ function winGame(){
 
 function onSelect(){
     if(!reticle.visible) return;
-
-    // if (grabbedObject && chest) {
-    //     const distance = grabbedObject.position.distanceTo(chest.position);
-    //     if (distance < 0.5) {
-    //         // Убираем ключ и сундук
-    //         scene.remove(grabbedObject);
-    //         scene.remove(chest);
-
-    //         grabbedObject = null;
-    //         key = null;
-    //         chest = null;
-
-    //         nextLevel(); // Переход на уровень 2
-    //         return; // важно, чтобы не запускался следующий блок
-    //     }
-    // }
     
     if(scene.children.filter(o=>o.userData.collectible).length===0){
         startLevel();
@@ -379,16 +337,5 @@ function render(timestamp,frame){
             }
         }
     }
-    // if(grabbedObject){
-
-    //     const direction = new THREE.Vector3(0, 0, -1)
-    //         .applyQuaternion(camera.quaternion);
-
-    //     const position = camera.position
-    //         .clone()
-    //         .add(direction.multiplyScalar(1));
-
-    //     grabbedObject.position.copy(position);
-    // }
     renderer.render(scene,camera);
 }

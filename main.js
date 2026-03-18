@@ -14,7 +14,6 @@ let hitTestSourceRequested = false;
 
 let key = null;
 let chest = null;
-let grabbedObject = null;
 
 let level=1;
 let collected = 0;
@@ -276,6 +275,21 @@ function raycastClick(event) {
     }
 }
 
+// function raycastClick(event) {
+//     const mouse = new THREE.Vector2((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1);
+//     const raycaster = new THREE.Raycaster();
+//     raycaster.setFromCamera(mouse, camera);
+//     const intersects = raycaster.intersectObjects(scene.children);
+//     intersects.forEach(obj => {
+//         if (obj.object.userData.collectible) {
+//             scene.remove(obj.object);
+//             collected++;
+//             soundCollect.play();
+//             checkProgress();
+//         }
+//     });
+// }
+
 function checkProgress(){
     if(level === 2 && collected === 10) nextLevel();
     if(level===3 && collected===3) winGame();
@@ -302,21 +316,21 @@ function winGame(){
 function onSelect(){
     if(!reticle.visible) return;
 
-    if (grabbedObject && chest) {
-        const distance = grabbedObject.position.distanceTo(chest.position);
-        if (distance < 0.5) {
-            // Убираем ключ и сундук
-            scene.remove(grabbedObject);
-            scene.remove(chest);
+    // if (grabbedObject && chest) {
+    //     const distance = grabbedObject.position.distanceTo(chest.position);
+    //     if (distance < 0.5) {
+    //         // Убираем ключ и сундук
+    //         scene.remove(grabbedObject);
+    //         scene.remove(chest);
 
-            grabbedObject = null;
-            key = null;
-            chest = null;
+    //         grabbedObject = null;
+    //         key = null;
+    //         chest = null;
 
-            nextLevel(); // Переход на уровень 2
-            return; // важно, чтобы не запускался следующий блок
-        }
-    }
+    //         nextLevel(); // Переход на уровень 2
+    //         return; // важно, чтобы не запускался следующий блок
+    //     }
+    // }
     
     if(scene.children.filter(o=>o.userData.collectible).length===0){
         startLevel();
@@ -365,16 +379,16 @@ function render(timestamp,frame){
             }
         }
     }
-    if(grabbedObject){
+    // if(grabbedObject){
 
-        const direction = new THREE.Vector3(0, 0, -1)
-            .applyQuaternion(camera.quaternion);
+    //     const direction = new THREE.Vector3(0, 0, -1)
+    //         .applyQuaternion(camera.quaternion);
 
-        const position = camera.position
-            .clone()
-            .add(direction.multiplyScalar(1));
+    //     const position = camera.position
+    //         .clone()
+    //         .add(direction.multiplyScalar(1));
 
-        grabbedObject.position.copy(position);
-    }
+    //     grabbedObject.position.copy(position);
+    // }
     renderer.render(scene,camera);
 }

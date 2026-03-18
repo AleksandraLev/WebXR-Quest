@@ -79,7 +79,7 @@ function spawnObject1(color){
     mesh.position.setFromMatrixPosition(reticle.matrix);
     mesh.position.x += (Math.random() - 0.5) * 0.5;
     mesh.position.z += (Math.random() - 0.5) * 0.5;
-    mesh.userData.collectible=true;
+    mesh.userData = "collectible";;
 
     scene.add(mesh);
 }
@@ -177,6 +177,7 @@ function startLevel(){
         if (levelstarted)
             return;
         uiTask.textContent = "Соберите 10 монет";
+        uiScore.textContent = "Собрано: 0";
 
         collected = 0;
 
@@ -264,8 +265,8 @@ function raycastClick(event) {
 // }
 
 function checkProgress(){
-    if(level === 2 && collected === 10) nextLevel();
-    if(level===3 && collected===3) winGame();
+    if(level === 2 && collected >= 10) nextLevel();
+    if(level===3 && collected >= 3) winGame();
 
     uiScore.textContent="Собрано: "+collected;
 }
@@ -290,7 +291,7 @@ function winGame(){
 function onSelect(){
     if(!reticle.visible) return;
     
-    if(scene.children.filter(o=>o.userData.collectible).length===0){
+    if(scene.children.filter(o=>o.userData.type === "collectible").length===0 && !levelstarted){
         startLevel();
     }
 }

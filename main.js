@@ -140,6 +140,8 @@ function spawnLevel1() {
     //     scene.add(chest);
 
     //   });
+    if (key != null || chest != null) return;
+
     if (level1started)
         return;
     const geometry=new THREE.BoxGeometry(0.3,0.1,0.1);
@@ -154,7 +156,7 @@ function spawnLevel1() {
     scene.add(key);
     
     const geometry2=new THREE.BoxGeometry(0.1,0.1,0.2);
-    const material2=new THREE.MeshStandardMaterial({color:(140, 77, 10)});
+    const material2=new THREE.MeshStandardMaterial({color:0x8C4D0A});
 
     chest = new THREE.Mesh(geometry2, material2);
     chest.position.setFromMatrixPosition(reticle.matrix);
@@ -176,33 +178,25 @@ function getRandomFar(min1, max1, min2, max2) {
 function spawnCoin() {
     if(!reticle.visible) return;
 
-    loader.load("assets/models/coin.glb", function(gltf){
+    // геометрия монетки (тонкий цилиндр)
+    const geometry = new THREE.CylinderGeometry(0.05, 0.05, 0.01, 32);
+    const material = new THREE.MeshStandardMaterial({ color: 0xffd700 });
 
-        const coin = gltf.scene;
+    const coin = new THREE.Mesh(geometry, material);
+    coin.rotation.x = Math.PI / 2;
+    // coin.rotation.z = Math.PI / 4;
 
-        coin.scale.set(0.1, 0.1, 0.1);
+    // позиция
+    coin.position.setFromMatrixPosition(reticle.matrix);
+    coin.position.x += getRandomFar(-2, -1, 1, 2);
+    coin.position.z += getRandomFar(-2, -1, 1, 2);
 
-        // позиция от reticle (как база)
-        coin.position.setFromMatrixPosition(reticle.matrix);
+    // если вдруг лежит "не так", можно раскомментировать:
+    // coin.rotation.x = Math.PI / 2;
 
-        // рандомный разброс (далеко от центра)
-        coin.position.x += getRandomFar(-2, -1, 1, 2);
-        coin.position.z += getRandomFar(-2, -1, 1, 2);
+    coin.userData.type = "collectible";
 
-        // помечаем как собираемый объект
-        coin.userData.type = "collectible";
-
-        // важно для raycast
-        coin.traverse(child => {
-        if(child.isMesh){
-            child.userData.type = "collectible";
-        }
-        });
-
-        scene.add(coin);
-
-    });
-
+    scene.add(coin);
 }
 
 function startLevel(){
@@ -234,8 +228,6 @@ function startLevel(){
 
 
 function raycastClick(event) {
-    if(grabbedObject) return;
-
     const mouse = new THREE.Vector2(
         (event.clientX / window.innerWidth) * 2 - 1,
         -(event.clientY / window.innerHeight) * 2 + 1
@@ -246,33 +238,44 @@ function raycastClick(event) {
 
     const intersects = raycaster.intersectObjects(scene.children, true);
 
-    if(intersects.length){
+    if(!intersects.length) return;
 
-        let obj = intersects[0].object;
+    let obj = intersects[0].object;
 
-        // поднимаемся вверх до объекта с userData
-        while(obj.parent && !obj.userData.type){
+    // поднимаемся до объекта с userData.type
+    while(obj.parent && !obj.userData.type){
         obj = obj.parent;
+    }
+
+    if(level === 1) {
+        // Сначала ключ
+        if(obj.userData.type === "key") {
+            scene.remove(obj);
+            key = null;
+            soundCollect.play();
+            uiTask.textContent = "Теперь откройте сундук!";
+            return;
         }
 
-        // 🔑 КЛЮЧ — взять
-        if(obj.userData.type === "key"){
-        grabbedObject = obj;
-        return;
-        }
-
-        // 📦 ОБЫЧНЫЙ ПРЕДМЕТ — собрать
-        if(obj.userData.type === "collectible"){
-
-        scene.remove(obj);
-
-        collected++;
-        soundCollect.play();
-
-        checkProgress();
+        // Потом сундук, только если ключ уже собран
+        if(obj.userData.type === "chest" && key === null) {
+            scene.remove(obj);
+            chest = null;
+            soundVictory.play();
+            nextLevel(); // Переход на уровень 2
+            return;
         }
     }
+
+    // Для остальных уровней оставляем обычную логику
+    if(obj.userData.type === "collectible") {
+        scene.remove(obj);
+        collected++;
+        soundCollect.play();
+        checkProgress();
+    }
 }
+
 function checkProgress(){
     if(level === 2 && collected === 10) nextLevel();
     if(level===3 && collected===3) winGame();

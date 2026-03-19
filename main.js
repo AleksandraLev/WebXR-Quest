@@ -116,9 +116,7 @@ function spawnCoin() {
 
     const coin = new THREE.Mesh(geometry, material);
     coin.rotation.x = Math.PI / 2;
-    // coin.rotation.z = Math.PI / 4;
 
-    // позиция
     coin.position.setFromMatrixPosition(reticle.matrix);
     coin.position.x += getRandomFar(-1.5, -0.9, 0.9, 1.5);
     coin.position.z += getRandomFar(-1.5, -0.9, 0.9, 1.5);
@@ -133,7 +131,7 @@ function spawnBalloon(){
 
     const geometry = new THREE.SphereGeometry(0.1, 32, 32);
 
-    // случайный цвет
+    // Случайный цвет
     const color = new THREE.Color(
         Math.random(),
         Math.random(),
@@ -146,7 +144,6 @@ function spawnBalloon(){
 
     balloon.position.setFromMatrixPosition(reticle.matrix);
 
-    // небольшой разброс (не далеко)
     balloon.position.x += (Math.random() - 0.5) * 0.5;
     balloon.position.z += (Math.random() - 0.5) * 0.5;
     balloon.position.y += 0.05;
@@ -185,6 +182,7 @@ function startLevel(){
             return;
 
         uiTask.textContent = "Лопните шарики!";
+        uiScore.textContent = "Собрано: 0";
         balloonsDone = 0;
 
         spawnBalloon();
@@ -221,11 +219,9 @@ function raycastClick(event) {
         collected++;
         soundCollect.play();
         checkProgress();
-        return; // важно — выходим после первого найденного
+        return;
     }
 }
-
-    // поднимаемся до объекта с userData.type
     while(obj.parent && !obj.userData.type){
         obj = obj.parent;
     }
@@ -244,12 +240,10 @@ function raycastClick(event) {
         if(obj.userData.type === "chest" && key === null) {
             scene.remove(obj);
             chest = null;
-            nextLevel(); // Переход на уровень 2
+            nextLevel();
             return;
         }
     }
-
-    // Для остальных уровней оставляем обычную логику
     if(obj.userData.type === "collectible") {
         scene.remove(obj);
         collected++;
@@ -265,14 +259,13 @@ function raycastClick(event) {
             obj.material.emissive = new THREE.Color(0x000000);
         }, 100);
 
-        // увеличиваем размер
         //obj.scale.multiplyScalar(1.2);
         // obj.scale.x += 1.2;
         // obj.scale.y += 1.2;
         // obj.scale.z += 1.2;
         obj.userData.targetScale = obj.scale.x + 1.2;
 
-        // после 5 кликов — "лопается"
+        // После 5 кликов шарик лопается
         if (balloonClicks >= 5) {
             //obj.material.transparent = true;
             //userData.exploding = true;
@@ -285,7 +278,6 @@ function raycastClick(event) {
             uiScore.textContent="Собрано: "+balloonsDone;
             soundCollect.play();
             scene.remove(obj);
-            // если ещё есть шарики
             if(balloonsDone < 3){
                 //spawnBalloon();
                 setTimeout(() => spawnBalloon(), 300);
@@ -380,9 +372,9 @@ function render(timestamp,frame){
             const s = obj.scale.x;
 
             if(s < obj.userData.targetScale){
-                obj.scale.x += 0.05;
-                obj.scale.y += 0.05;
-                obj.scale.z += 0.05;
+                obj.scale.x += 0.15;
+                obj.scale.y += 0.15;
+                obj.scale.z += 0.15;
             }
         }        
     });

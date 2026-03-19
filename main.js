@@ -19,6 +19,10 @@ let level=1;
 let collected = 0;
 let levelstarted = false;
 
+let balloon = null;
+let balloonClicks = 0;
+let balloonsDone = 0;
+
 const uiLevel=document.getElementById("level");
 const uiTask=document.getElementById("task");
 const uiScore=document.getElementById("score");
@@ -70,43 +74,43 @@ function init(){
     window.addEventListener("click",raycastClick);
 }
 
-function spawnObject1(color){
-    const geometry=new THREE.BoxGeometry(0.1,0.1,0.1);
-    const material=new THREE.MeshStandardMaterial({color:color});
+// function spawnObject1(color){
+//     const geometry=new THREE.BoxGeometry(0.1,0.1,0.1);
+//     const material=new THREE.MeshStandardMaterial({color:color});
 
-    const mesh=new THREE.Mesh(geometry,material);
+//     const mesh=new THREE.Mesh(geometry,material);
 
-    mesh.position.setFromMatrixPosition(reticle.matrix);
-    mesh.position.x += (Math.random() - 0.5) * 0.5;
-    mesh.position.z += (Math.random() - 0.5) * 0.5;
-    mesh.userData = "collectible";;
+//     mesh.position.setFromMatrixPosition(reticle.matrix);
+//     mesh.position.x += (Math.random() - 0.5) * 0.5;
+//     mesh.position.z += (Math.random() - 0.5) * 0.5;
+//     mesh.userData.type = "collectible";
 
-    scene.add(mesh);
-}
+//     scene.add(mesh);
+// }
 
-const loader = new GLTFLoader();
+// const loader = new GLTFLoader();
 
-function spawnObject(modelPath){
+// function spawnObject(modelPath){
 
-  loader.load(modelPath, function(gltf){
+//   loader.load(modelPath, function(gltf){
 
-    const model = gltf.scene;
+//     const model = gltf.scene;
 
-    model.position.setFromMatrixPosition(reticle.matrix);
+//     model.position.setFromMatrixPosition(reticle.matrix);
 
-    // случайное смещение
-    model.position.x += (Math.random() - 0.5) * 0.5;
-    model.position.z += (Math.random() - 0.5) * 0.5;
+//     // случайное смещение
+//     model.position.x += (Math.random() - 0.5) * 0.5;
+//     model.position.z += (Math.random() - 0.5) * 0.5;
 
-    model.scale.set(0.2, 0.2, 0.2);
+//     model.scale.set(0.2, 0.2, 0.2);
 
-    model.userData.collectible = true;
+//     model.userData.type = "collectible";
 
-    scene.add(model);
+//     scene.add(model);
 
-  });
+//   });
 
-}
+// }
 
 function spawnLevel1() {
     if (key != null || chest != null) return;
@@ -165,6 +169,34 @@ function spawnCoin() {
     scene.add(coin);
 }
 
+function spawnBalloon(){
+
+    const geometry = new THREE.SphereGeometry(0.1, 32, 32);
+
+    // случайный цвет
+    const color = new THREE.Color(
+        Math.random(),
+        Math.random(),
+        Math.random()
+    );
+
+    const material = new THREE.MeshStandardMaterial({ color });
+
+    balloon = new THREE.Mesh(geometry, material);
+
+    balloon.position.setFromMatrixPosition(reticle.matrix);
+
+    // небольшой разброс (не далеко)
+    balloon.position.x += (Math.random() - 0.5) * 0.5;
+    balloon.position.z += (Math.random() - 0.5) * 0.5;
+
+    balloon.userData.type = "balloon";
+
+    balloonClicks = 0;
+
+    scene.add(balloon);
+}
+
 function startLevel(){
     collected=0;
 
@@ -191,11 +223,11 @@ function startLevel(){
         if (levelstarted)
             return;
 
-        uiTask.textContent="Соберите 3 зелёных объекта";
+        uiTask.textContent = "Лопните шарики!";
+        balloonsDone = 0;
 
-        spawnObject1("green");
-        spawnObject1("green");
-        spawnObject1("green");
+        spawnBalloon();
+        
         levelstarted = true;
     }
 }
@@ -247,6 +279,39 @@ function raycastClick(event) {
         soundCollect.play();
         checkProgress();
     }
+
+    if(obj.userData.type === "balloon"){
+
+        balloonClicks++;
+
+        // увеличиваем размер
+        //obj.scale.multiplyScalar(1.2);
+        obj.scale.x += 0.1;
+        obj.scale.y += 0.1;
+        obj.scale.z += 0.1;
+
+        // после 5 кликов — "лопается"
+        if (balloonClicks >= 5) {
+            obj.material.transparent = true;
+            obj.material.opacity = 0.5;
+            obj.scale.set(0,0,0); 
+            scene.remove(obj);
+            balloon = null;
+
+            balloonsDone++;
+            soundCollect.play();
+
+            // если ещё есть шарики
+            if(balloonsDone < 3){
+                spawnBalloon();
+            }
+            else {
+                winGame();
+            }
+        }
+
+        return;
+    }
 }
 
 // function raycastClick(event) {
@@ -266,7 +331,6 @@ function raycastClick(event) {
 
 function checkProgress(){
     if(level === 2 && collected >= 10) nextLevel();
-    if(level===3 && collected >= 3) winGame();
 
     uiScore.textContent="Собрано: "+collected;
 }
@@ -291,7 +355,10 @@ function winGame(){
 function onSelect(){
     if(!reticle.visible) return;
     
-    if(scene.children.filter(o=>o.userData.type === "collectible").length===0 && !levelstarted){
+    // if(scene.children.filter(o=>o.userData.type === "collectible").length===0 && !levelstarted){
+    //     startLevel();
+    // }
+    if(level === 1 && !levelstarted){
         startLevel();
     }
 }

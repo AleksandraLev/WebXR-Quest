@@ -259,7 +259,7 @@ function raycastClick(event) {
         // после 5 кликов — "лопается"
         if (balloonClicks >= 5) {
             obj.material.transparent = true;
-            obj.userData.exploding = true;
+            //userData.exploding = true;
             delete obj.userData.targetScale;
             //obj.material.opacity = 0.5;
             //obj.scale.set(0,0,0); 
@@ -267,6 +267,7 @@ function raycastClick(event) {
             balloon = null;
 
             balloonsDone++;
+            uiScore.textContent="Собрано: "+balloonsDone;
             soundCollect.play();
             scene.remove(obj);
             // если ещё есть шарики

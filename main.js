@@ -163,6 +163,7 @@ function spawnCoin() {
     coin.position.setFromMatrixPosition(reticle.matrix);
     coin.position.x += getRandomFar(-2, -1, 1, 2);
     coin.position.z += getRandomFar(-2, -1, 1, 2);
+    coin.position.y += 0.05;
 
     coin.userData.type = "collectible";
 
@@ -189,6 +190,7 @@ function spawnBalloon(){
     // небольшой разброс (не далеко)
     balloon.position.x += (Math.random() - 0.5) * 0.5;
     balloon.position.z += (Math.random() - 0.5) * 0.5;
+    balloon.position.y += 0.05;
 
     balloon.userData.type = "balloon";
 
@@ -286,9 +288,9 @@ function raycastClick(event) {
 
         // увеличиваем размер
         //obj.scale.multiplyScalar(1.2);
-        obj.scale.x += 0.5;
-        obj.scale.y += 0.5;
-        obj.scale.z += 0.5;
+        obj.scale.x += 1.2;
+        obj.scale.y += 1.2;
+        obj.scale.z += 1.2;
 
         // после 5 кликов — "лопается"
         if (balloonClicks >= 5) {

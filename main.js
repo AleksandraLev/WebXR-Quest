@@ -205,23 +205,23 @@ function raycastClick(event) {
 
     if(!intersects.length) return;
 
-    //let obj = intersects[0].object;
+    let obj = intersects[0].object;
 
-    for (let hit of intersects) {
-    let obj = hit.object;
+    // for (let hit of intersects) {
+    //     let obj = hit.object;
 
-    while (obj.parent && !obj.userData.type) {
-        obj = obj.parent;
-    }
+    //     while (obj.parent && !obj.userData.type) {
+    //         obj = obj.parent;
+    //     }
 
-    if(obj.userData.type === "collectible"){
-        scene.remove(obj);
-        collected++;
-        soundCollect.play();
-        checkProgress();
-        return;
-    }
-}
+    //     if(obj.userData.type === "collectible"){
+    //         scene.remove(obj);
+    //         collected++;
+    //         soundCollect.play();
+    //         checkProgress();
+    //         return;
+    //     }
+    // }
     while(obj.parent && !obj.userData.type){
         obj = obj.parent;
     }

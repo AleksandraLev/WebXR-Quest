@@ -254,6 +254,10 @@ function raycastClick(event) {
     while(obj.parent && !obj.userData.type){
         obj = obj.parent;
     }
+    obj.material.emissive = new THREE.Color(0xffffff);
+    setTimeout(() => {
+        obj.material.emissive = new THREE.Color(0x000000);
+    }, 100);
 
     if(level === 1) {
         // Сначала ключ
@@ -288,16 +292,18 @@ function raycastClick(event) {
 
         // увеличиваем размер
         //obj.scale.multiplyScalar(1.2);
-        obj.scale.x += 1.2;
-        obj.scale.y += 1.2;
-        obj.scale.z += 1.2;
+        // obj.scale.x += 1.2;
+        // obj.scale.y += 1.2;
+        // obj.scale.z += 1.2;
+        obj.userData.targetScale = obj.scale.x + 1.2;
 
         // после 5 кликов — "лопается"
         if (balloonClicks >= 5) {
             obj.material.transparent = true;
-            obj.material.opacity = 0.5;
-            obj.scale.set(0,0,0); 
-            scene.remove(obj);
+            delete obj.userData.targetScale;
+            //obj.material.opacity = 0.5;
+            //obj.scale.set(0,0,0); 
+            //scene.remove(obj);
             balloon = null;
 
             balloonsDone++;
@@ -305,7 +311,8 @@ function raycastClick(event) {
 
             // если ещё есть шарики
             if(balloonsDone < 3){
-                spawnBalloon();
+                //spawnBalloon();
+                setTimeout(() => spawnBalloon(), 300);
             }
             else {
                 winGame();
@@ -407,5 +414,26 @@ function render(timestamp,frame){
             }
         }
     }
+    scene.traverse(obj => {
+        if(obj.userData.targetScale){
+            const s = obj.scale.x;
+
+            if(s < obj.userData.targetScale){
+                obj.scale.x += 0.02;
+                obj.scale.y += 0.02;
+                obj.scale.z += 0.02;
+            }
+        }
+        if(obj.userData.exploding){
+            obj.scale.multiplyScalar(1.1);
+            obj.material.opacity -= 0.05;
+            obj.material.transparent = true;
+
+            if(obj.material.opacity <= 0){
+                scene.remove(obj);
+            }
+        }
+        
+    });
     renderer.render(scene,camera);
 }

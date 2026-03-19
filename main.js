@@ -207,7 +207,23 @@ function raycastClick(event) {
 
     if(!intersects.length) return;
 
-    let obj = intersects[0].object;
+    //let obj = intersects[0].object;
+
+    for (let hit of intersects) {
+    let obj = hit.object;
+
+    while (obj.parent && !obj.userData.type) {
+        obj = obj.parent;
+    }
+
+    if(obj.userData.type === "collectible"){
+        scene.remove(obj);
+        collected++;
+        soundCollect.play();
+        checkProgress();
+        return; // важно — выходим после первого найденного
+    }
+}
 
     // поднимаемся до объекта с userData.type
     while(obj.parent && !obj.userData.type){
@@ -258,9 +274,8 @@ function raycastClick(event) {
 
         // после 5 кликов — "лопается"
         if (balloonClicks >= 5) {
-            obj.material.transparent = true;
+            //obj.material.transparent = true;
             //userData.exploding = true;
-            delete obj.userData.targetScale;
             //obj.material.opacity = 0.5;
             //obj.scale.set(0,0,0); 
             
@@ -365,21 +380,11 @@ function render(timestamp,frame){
             const s = obj.scale.x;
 
             if(s < obj.userData.targetScale){
-                obj.scale.x += 0.02;
-                obj.scale.y += 0.02;
-                obj.scale.z += 0.02;
+                obj.scale.x += 0.05;
+                obj.scale.y += 0.05;
+                obj.scale.z += 0.05;
             }
-        }
-        if(obj.userData.exploding){
-            obj.scale.multiplyScalar(1.1);
-            obj.material.opacity -= 0.05;
-            obj.material.transparent = true;
-
-            if(obj.material.opacity <= 0){
-                scene.remove(obj);
-            }
-        }
-        
+        }        
     });
     renderer.render(scene,camera);
 }

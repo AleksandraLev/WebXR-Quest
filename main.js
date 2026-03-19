@@ -117,7 +117,7 @@ function spawnLevel1() {
 
     if (levelstarted)
         return;
-    const geometry=new THREE.BoxGeometry(0.3,0.1,0.1);
+    const geometry=new THREE.BoxGeometry(0.3,0.07,0.07);
     const material=new THREE.MeshStandardMaterial({color:"yellow"});
 
     key = new THREE.Mesh(geometry, material);
@@ -128,7 +128,7 @@ function spawnLevel1() {
     key.userData.type = "key";
     scene.add(key);
     
-    const geometry2=new THREE.BoxGeometry(0.1,0.1,0.2);
+    const geometry2=new THREE.BoxGeometry(0.3,0.3,0.5);
     const material2=new THREE.MeshStandardMaterial({color:0x8C4D0A});
 
     chest = new THREE.Mesh(geometry2, material2);
@@ -161,8 +161,8 @@ function spawnCoin() {
 
     // позиция
     coin.position.setFromMatrixPosition(reticle.matrix);
-    coin.position.x += getRandomFar(-2, -1, 1, 2);
-    coin.position.z += getRandomFar(-2, -1, 1, 2);
+    coin.position.x += getRandomFar(-1.5, -0.5, 0.5, 1.5);
+    coin.position.z += getRandomFar(-1.5, -0.5, 0.5, 1.5);
     coin.position.y += 0.05;
 
     coin.userData.type = "collectible";

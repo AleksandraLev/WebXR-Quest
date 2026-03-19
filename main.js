@@ -1,9 +1,5 @@
-// import * as THREE from 'three';
-// import { ARButton } from 'three/addons/webxr/ARButton.js';
-// import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as THREE from 'https://unpkg.com/three@0.183.2/build/three.module.js';
 import { ARButton } from 'https://unpkg.com/three@0.183.2/examples/jsm/webxr/ARButton.js';
-import { GLTFLoader } from 'https://unpkg.com/three@0.183.2/examples/jsm/loaders/GLTFLoader.js';
 
 let scene, camera, renderer;
 let controller;
@@ -74,43 +70,6 @@ function init(){
     window.addEventListener("click",raycastClick);
 }
 
-// function spawnObject1(color){
-//     const geometry=new THREE.BoxGeometry(0.1,0.1,0.1);
-//     const material=new THREE.MeshStandardMaterial({color:color});
-
-//     const mesh=new THREE.Mesh(geometry,material);
-
-//     mesh.position.setFromMatrixPosition(reticle.matrix);
-//     mesh.position.x += (Math.random() - 0.5) * 0.5;
-//     mesh.position.z += (Math.random() - 0.5) * 0.5;
-//     mesh.userData.type = "collectible";
-
-//     scene.add(mesh);
-// }
-
-// const loader = new GLTFLoader();
-
-// function spawnObject(modelPath){
-
-//   loader.load(modelPath, function(gltf){
-
-//     const model = gltf.scene;
-
-//     model.position.setFromMatrixPosition(reticle.matrix);
-
-//     // случайное смещение
-//     model.position.x += (Math.random() - 0.5) * 0.5;
-//     model.position.z += (Math.random() - 0.5) * 0.5;
-
-//     model.scale.set(0.2, 0.2, 0.2);
-
-//     model.userData.type = "collectible";
-
-//     scene.add(model);
-
-//   });
-
-// }
 
 function spawnLevel1() {
     if (key != null || chest != null) return;
@@ -254,11 +213,7 @@ function raycastClick(event) {
     while(obj.parent && !obj.userData.type){
         obj = obj.parent;
     }
-    obj.material.emissive = new THREE.Color(0xffffff);
-    setTimeout(() => {
-        obj.material.emissive = new THREE.Color(0x000000);
-    }, 100);
-
+    
     if(level === 1) {
         // Сначала ключ
         if(obj.userData.type === "key") {
@@ -289,6 +244,10 @@ function raycastClick(event) {
     if(obj.userData.type === "balloon"){
 
         balloonClicks++;
+        obj.material.emissive = new THREE.Color(0xffffff);
+        setTimeout(() => {
+            obj.material.emissive = new THREE.Color(0x000000);
+        }, 100);
 
         // увеличиваем размер
         //obj.scale.multiplyScalar(1.2);
@@ -304,12 +263,12 @@ function raycastClick(event) {
             delete obj.userData.targetScale;
             //obj.material.opacity = 0.5;
             //obj.scale.set(0,0,0); 
-            //scene.remove(obj);
+            
             balloon = null;
 
             balloonsDone++;
             soundCollect.play();
-
+            scene.remove(obj);
             // если ещё есть шарики
             if(balloonsDone < 3){
                 //spawnBalloon();
@@ -323,21 +282,6 @@ function raycastClick(event) {
         return;
     }
 }
-
-// function raycastClick(event) {
-//     const mouse = new THREE.Vector2((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1);
-//     const raycaster = new THREE.Raycaster();
-//     raycaster.setFromCamera(mouse, camera);
-//     const intersects = raycaster.intersectObjects(scene.children);
-//     intersects.forEach(obj => {
-//         if (obj.object.userData.collectible) {
-//             scene.remove(obj.object);
-//             collected++;
-//             soundCollect.play();
-//             checkProgress();
-//         }
-//     });
-// }
 
 function checkProgress(){
     if(level === 2 && collected >= 10) nextLevel();

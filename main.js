@@ -286,9 +286,9 @@ function raycastClick(event) {
 
         // увеличиваем размер
         //obj.scale.multiplyScalar(1.2);
-        obj.scale.x += 0.1;
-        obj.scale.y += 0.1;
-        obj.scale.z += 0.1;
+        obj.scale.x += 0.5;
+        obj.scale.y += 0.5;
+        obj.scale.z += 0.5;
 
         // после 5 кликов — "лопается"
         if (balloonClicks >= 5) {

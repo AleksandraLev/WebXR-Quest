@@ -161,8 +161,8 @@ function spawnCoin() {
 
     // позиция
     coin.position.setFromMatrixPosition(reticle.matrix);
-    coin.position.x += getRandomFar(-1.5, -0.5, 0.5, 1.5);
-    coin.position.z += getRandomFar(-1.5, -0.5, 0.5, 1.5);
+    coin.position.x += getRandomFar(-1.5, -0.9, 0.9, 1.5);
+    coin.position.z += getRandomFar(-1.5, -0.9, 0.9, 1.5);
     coin.position.y += 0.05;
 
     coin.userData.type = "collectible";
@@ -315,6 +315,7 @@ function raycastClick(event) {
         // после 5 кликов — "лопается"
         if (balloonClicks >= 5) {
             obj.userData.exploding = true;
+            obj.material.transparent = true;
             delete obj.userData.targetScale;
             //obj.material.opacity = 0.5;
             //obj.scale.set(0,0,0); 
@@ -430,6 +431,8 @@ function render(timestamp,frame){
         }
     }
     scene.traverse(obj => {
+        if (!obj.parent) return;
+        
         if(obj.userData.targetScale){
             const s = obj.scale.x;
 

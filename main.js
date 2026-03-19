@@ -152,7 +152,7 @@ function spawnCoin() {
     if(!reticle.visible) return;
 
     // геометрия монетки (тонкий цилиндр)
-    const geometry = new THREE.CylinderGeometry(0.06, 0.06, 0.02, 32);
+    const geometry = new THREE.CylinderGeometry(0.07, 0.07, 0.02, 32);
     const material = new THREE.MeshStandardMaterial({ color: 0xffd700 });
 
     const coin = new THREE.Mesh(geometry, material);
@@ -248,22 +248,7 @@ function raycastClick(event) {
 
     if(!intersects.length) return;
 
-    // let obj = intersects[0].object;
-    for (let hit of intersects) {
-        let obj = hit.object;
-
-        while (obj.parent && !obj.userData.type) {
-            obj = obj.parent;
-        }
-
-        if(obj.userData.type === "collectible"){
-            scene.remove(obj);
-            collected++;
-            soundCollect.play();
-            checkProgress();
-            return; // важно — выходим после первого найденного
-        }
-    }
+    let obj = intersects[0].object;
 
     // поднимаемся до объекта с userData.type
     while(obj.parent && !obj.userData.type){
@@ -314,8 +299,8 @@ function raycastClick(event) {
 
         // после 5 кликов — "лопается"
         if (balloonClicks >= 5) {
-            obj.userData.exploding = true;
             obj.material.transparent = true;
+            obj.userData.exploding = true;
             delete obj.userData.targetScale;
             //obj.material.opacity = 0.5;
             //obj.scale.set(0,0,0); 
@@ -431,8 +416,6 @@ function render(timestamp,frame){
         }
     }
     scene.traverse(obj => {
-        if (!obj.parent) return;
-        
         if(obj.userData.targetScale){
             const s = obj.scale.x;
 
